@@ -1,39 +1,34 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('weatherForm');
-    const input = document.getElementById('default-search');
-    const weatherInfo = document.getElementById('weatherInfo');
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const location = input.value.trim();
-        const apiKey = '38cce39ea4117178e467a5fc7ea05a6c'; // Remplacez par votre clé API OpenWeatherMap
-
-        fetchWeather(location, apiKey)
-            .then(data => {
-                updateWeather(data);
-            })
-            .catch(error => {
-                console.error('Erreur lors de la récupération des données météo', error);
-                weatherInfo.innerHTML = `<p>Impossible de récupérer les informations météo pour ${location}</p>`;
-            });
-    });
-
-    async function fetchWeather(location, apiKey) {
-        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}&units=metric&lang=fr`;
-
+document.addEventListener("DOMContentLoaded", () => {
+    const weatherForm = document.getElementById("weatherForm");
+    const weatherInfo = document.getElementById("weatherInfo");
+  
+    weatherForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const searchInput = document.getElementById("default-search").value;
+      const apiKey = '35d21473795fa894140675103acdc259'; 
+      const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${searchInput}&appid=${apiKey}&units=metric&lang=fr`;
+  
+      try {
         const response = await fetch(apiUrl);
         if (!response.ok) {
-            throw new Error('Erreur de récupération des données météo');
+          throw new Error("City not found");
         }
-        return await response.json();
+        const data = await response.json();
+        displayWeather(data);
+      } catch (error) {
+        weatherInfo.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+      }
+    });
+  
+    function displayWeather(data) {
+      const { name, main, weather } = data;
+      const weatherDetails = `
+        <h2 class="text-2xl font-bold">${name}</h2>
+        <p class="text-xl">${weather[0].description}</p>
+        <p class="text-lg">Température: ${main.temp}°C</p>
+        <p class="text-lg">Humidité: ${main.humidity}%</p>
+      `;
+      weatherInfo.innerHTML = weatherDetails;
     }
-
-    function updateWeather(data) {
-        weatherInfo.innerHTML = `
-            <h2>Météo à ${data.name}</h2>
-            <p>Température : ${data.main.temp}°C</p>
-            <p>Description : ${data.weather[0].description}</p>
-            <p>Humidité : ${data.main.humidity}%</p>
-        `;
-    }
-});
+  });
+  
